@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Will You Go Out With Me?</title>
+  <style>
+    body {
+      background-color: lightpink;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+    }
+    .container {
+      text-align: center;
+    }
+    .header_text {
+      font-size: 2.5rem;
+      color: #333;
+    }
+    .gif_container img {
+      width: 400px;
+      height: auto;
+    }
+    .buttons {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    .btn {
+      padding: 15px 30px;
+      font-size: 1.5rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background-color: red;
+      color: white;
+      transition: transform 0.2s ease;
+    }
+    #noButton {
+      position: static;
+    }
+    .question-container {
+      display: none;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .question-box {
+      margin: 20px 0;
+    }
+    .answer-btn {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: red;
+      color: white;
+      font-family: 'Comic Sans MS';
+      font-size: 1.2rem;
+    }
+    .emoji-btn {
+      font-size: 2rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      margin: 0 10px;
+    }
+    #textAnswer {
+      padding: 10px;
+      font-size: 1rem;
+      margin: 10px 0;
+      width: 80%;
+      max-width: 400px;
+      font-family: 'Comic Sans MS';
+    }
+  </style>
+  <!-- Canvas Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div>
+      <h1 class="header_text">Will you be my Valentine, Bubu?</h1>
+    </div>
+    <div class="gif_container">
+      <img src="https://media.giphy.com/media/4N1wOi78ZGzSB6H7vK/giphy.gif?cid=790b76113gdqt774jgi162htz1i6ym7gppj5o362f26pvomj&ep=v1_gifs_search&rid=giphy.gif&ct=g" alt="Cute animated illustration">
+    </div>
+    <div class="buttons">
+      <button class="btn" id="yesButton">Yes</button>
+      <button class="btn" id="noButton">No</button>
+    </div>
+  </div>
+
+  <div class="question-container" id="questionContainer">
+    <h1>Acha! Aao tumse thode sawal puche!!</h1>
+    <div id="questions"></div>
+    <div id="answersDisplay"></div>
+  </div>
+
+  <script>
+    let clickCount = 0;
+    // Modified questions array with the final yes/no question removed.
+    const questions = [
+      { text: "Do you love me?", options: ["Yes", "No"] },
+      { text: "Do you really love me?", options: ["Haan Haan", "Pata Nai"] },
+      { text: "Are you sure?", options: ["Yes", "No"] },
+      { text: "Lock kar dia jaye?", options: ["Haan Haan", "Haaaaaaaa"] },
+      { text: "Matlab soch lia na?", options: ["Haan Haan", "Haaaaaaaa"] },
+      { text: "Thik hai maan jati hu?", options: ["😛", "😘"] },
+      { text: "Itni jaldi thodi manungi :p", options: ["😛", "😘"] },
+      { text: "Acha ek baat batana sachi sachi", options: ["Han bolo"] },
+      { text: "What's your favorite memory of us?", input: true },
+      { text: "And the final question >>>>>", options: ["Han bolo"] },
+      { text: "Will you marry me someday?", options: ["Haan Haan", "Hell Yes"] }
+    ];
+
+    let currentQuestion = 0;
+    let answers = [];
+
+    document.getElementById("yesButton").addEventListener("click", function() {
+      clickCount++;
+      // Grow button until 5 clicks
+      if (clickCount <= 5) {
+        const currentSize = parseFloat(window.getComputedStyle(this).fontSize);
+        this.style.fontSize = `${currentSize * 1.2}px`;
+        this.style.padding = `${parseFloat(window.getComputedStyle(this).padding) * 1.2}px`;
+      }
+      // On 6th click, trigger confetti and show questions
+      if (clickCount === 6) {
+        confetti({
+          particleCount: 1000,
+          spread: 70,
+          origin: { y: 0.6 },
+          shapes: ['heart'],
+          colors: ['#ff007f', '#ff1493', '#ff69b4', '#ff85a2']
+        });
+        document.querySelector(".container").style.display = "none";
+        document.getElementById("questionContainer").style.display = "block";
+        showQuestion();
+      }
+    });
+
+    function showQuestion() {
+      const question = questions[currentQuestion];
+      let html = `<div class="question-box"><h2>${question.text}</h2>`;
+      if (question.input) {
+        html += `<input type="text" id="textAnswer">
+                 <button class="answer-btn" onclick="saveAnswer()">Next</button>`;
+      } else if (question.options) {
+        question.options.forEach(option => {
+          if (option === "😛" || option === "😘") {
+            html += `<button class="emoji-btn" onclick="nextQuestion('${option}')">${option}</button>`;
+          } else {
+            html += `<button class="answer-btn" onclick="nextQuestion('${option}')">${option}</button>`;
+          }
+        });
+      }
+      html += "</div>";
+      document.getElementById("questions").innerHTML = html;
+    }
+
+    function nextQuestion(answer) {
+      answers.push(answer);
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        showQuestion();
+      } else {
+        showAnswers();
+      }
+    }
+
+    function saveAnswer() {
+      const answer = document.getElementById("textAnswer").value;
+      nextQuestion(answer);
+    }
+
+    function showAnswers() {
+      // Clear the questions section so that options are not shown with answers
+      document.getElementById("questions").innerHTML = "";
+      
+      let html = "<h2>Your Answers:</h2>";
+      answers.forEach((answer, index) => {
+        html += `<p>${index + 1}. ${questions[index].text}<br><strong>${answer}</strong></p>`;
+      });
+      document.getElementById("answersDisplay").innerHTML = html;
+      
+      // After a 5-second delay, automatically transition to the final page
+      setTimeout(finalPage, 5000);
+    }
+
+    // Final page function to display "I Love You!" with a GIF
+    function finalPage() {
+      document.body.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+          <h1 style="font-size: 3rem; color: darkred;">I Love You!</h1>
+          <div class="gif_container">
+            <img src="https://media.giphy.com/media/l4pTdcifPZLpDjL1e/giphy.gif?cid=790b7611jnlnx7op281x5j675jctrw4bvrgyii3l6fez80d9&ep=v1_gifs_search&rid=giphy.gif&ct=g" alt="Celebration GIF" style="width: 400px; height: auto;">
+          </div>
+        </div>
+      `;
+    }
+
+    // No button movement logic for "No" button
+    document.getElementById("noButton").addEventListener("mouseover", moveButton);
+    document.getElementById("noButton").addEventListener("click", moveButton);
+
+    function moveButton() {
+      const button = document.getElementById("noButton");
+      const x = Math.random() * (window.innerWidth - button.offsetWidth);
+      const y = Math.random() * (window.innerHeight - button.offsetHeight);
+      button.style.position = "absolute";
+      button.style.left = `${x}px`;
+      button.style.top = `${y}px`;
+    }
+  </script>
+</body>
+</html>
